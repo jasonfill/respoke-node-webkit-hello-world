@@ -17,6 +17,48 @@
 
     <script>
 
+    function init()
+{
+    if(navigator.webkitGetUserMedia)
+    {
+        navigator.webkitGetUserMedia({video:{
+                mandatory: {
+                    chromeMediaSource: 'screen',
+                    maxWidth: 2560,
+                    maxHeight: 1440,
+                    minAspectRatio: 1.77
+                }
+            }}, onSuccess, onFail);
+    }
+    else
+    {
+        alert('webRTC not available');
+    }
+}
+
+function onSuccess(stream)
+{
+    document.getElementById('camFeed').src = webkitURL.createObjectURL(stream);
+}
+
+function onFail()
+{
+    alert('could not connect stream');
+}
+
+function takePhoto()
+{
+    var c = document.getElementById('photo');
+    var v = document.getElementById('camFeed');
+    c.getContext('2d').drawImage(v, 0, 0, 320, 240);
+}
+
+
+
+    var _ = require('lodash');
+      var ps = require('current-processes');
+
+
       function setVideo(elementId, videoElement) {
         var videoParent = document.getElementById(elementId);
         videoParent.innerHTML = "";
@@ -55,6 +97,18 @@
 
         // Listen for the 'connect' event
         $scope.client.listen('connect', function () {
+          
+           ps.get(function(err, processes) {
+
+              var sorted = _.sortBy(processes, 'cpu');
+              var top5  = sorted.reverse().splice(0, 5);
+
+              var processes = document.getElementById('processes');
+              processes.innerHTML = top5;
+              //console.log(JSON.parse(processes))
+          });
+
+
           $scope.$apply();
         });
 
@@ -96,7 +150,7 @@
     </script>
 
   </head>
-  <body>
+  <body onload="init();">
     <div ng-controller="RespokeController">
 
       <h3 ng-show="client.isConnected()">
@@ -117,6 +171,31 @@
       <div id="remoteVideoSource"></div>
       <div id="localVideoSource"></div>
 
+
+      <div id="processes"></div>
+
+
+      <div style="width:352px; height:625px; margin:0 auto; background-color:#fff;" >
+        <div>
+          <video id="camFeed" width="1920" height="1080" autoplay>
+        </video>
+      </div>
+
+        <div>
+            <canvas id="photo" width="320" height="240">
+            </canvas>
+        </div>
+
+        <div style="margin:0 auto; width:82px;">
+            <input type="button" value="Take Photo" onclick="takePhoto();">
+        </div>
     </div>
+
+    </div>
+
+
+
+
+
   </body>
 </html>
